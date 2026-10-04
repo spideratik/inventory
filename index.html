@@ -3,31 +3,33 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Stockroom Tags: Inventory with Cost-Code Serials</title>
-<script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
+<title>Stockroom Tags: Cloud Inventory</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
 <style>
 :root{--ink:#0f2b3a;--paper:#f1f4f7;--card:#fff;--tag:#ffd23f;--line:#d9e0e6;--muted:#5c7080;--low:#d64545;--ok:#1f9d6b;--r:12px}
 *{box-sizing:border-box}
 body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.4 "Segoe UI",system-ui,-apple-system,sans-serif}
-header{background:var(--ink);color:#fff;padding:12px 16px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
-header h1{margin:0;font-size:20px;letter-spacing:.2px}
-.bar{display:flex;flex-wrap:wrap;gap:8px}
-button,.btn{font:inherit;font-weight:600;border:1.5px solid var(--ink);background:var(--card);color:var(--ink);border-radius:9px;padding:8px 13px;cursor:pointer}
-header button{border-color:#ffffff55;background:transparent;color:#fff}
-button.pri{background:var(--tag);color:var(--ink);border-color:var(--tag)}
-button.sm{padding:4px 9px;font-size:13px}
-button.danger{color:var(--low);border-color:var(--low)}
-button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #2b7fff;outline-offset:1px}
+nav{background:var(--ink);color:#fff;padding:10px 16px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+nav b{font-size:19px;margin-right:auto}nav a{color:#fff;text-decoration:none;padding:6px 11px;border-radius:8px;font-weight:600}
+nav a.on{background:var(--tag);color:var(--ink)}nav .who{font-size:12px;color:#b8c9d6}
+button{font:inherit;font-weight:600;border:1.5px solid var(--ink);background:var(--card);color:var(--ink);border-radius:9px;padding:8px 13px;cursor:pointer}
+nav button{background:transparent;color:#fff;border-color:#ffffff55}
+button.pri{background:var(--tag);border-color:var(--tag)}button.sm{padding:4px 9px;font-size:13px}button.danger{color:var(--low);border-color:var(--low)}
+button:disabled{opacity:.5}
+button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{outline:3px solid #2b7fff;outline-offset:1px}
 main{max-width:1180px;margin:0 auto;padding:16px}
+h2.pg{margin:4px 0 12px;font-size:22px}
+.auth{max-width:400px;margin:6vh auto;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:24px;display:grid;gap:12px}
+.auth h1{margin:0;font-size:24px}.auth a{color:#0a58ca;font-weight:600}
 .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
 .tile{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px}
 .tile span{color:var(--muted);font-size:13px}.tile b{display:block;font-size:24px;margin-top:2px}
 .tile.big{background:var(--ink);color:#fff}.tile.big span{color:#b8c9d6}
-.recent{margin:14px 0;background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:10px 14px}
-.recent h2,.recent h3{margin:0 0 6px;font-size:15px}
+.panel{margin:14px 0;background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:10px 14px}
+.panel h3{margin:0 0 6px;font-size:15px}
 .rl{display:flex;gap:10px;overflow-x:auto;padding-bottom:4px}
 .ri{min-width:190px;display:flex;gap:8px;align-items:center;font-size:13px}
-.ri img,.ri .noimg{width:38px;height:38px;border-radius:8px;object-fit:cover;flex:none}
+.ri img,.noimg{width:38px;height:38px;border-radius:8px;object-fit:cover;flex:none;display:grid;place-items:center;background:var(--paper)}
 .tools{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:12px 0}
 input,select{font:inherit;padding:8px 10px;border:1.5px solid var(--line);border-radius:9px;background:#fff;color:var(--ink);width:100%}
 .tools input[type=search]{flex:1 1 220px;width:auto}.tools select{width:auto}
@@ -36,76 +38,53 @@ input,select{font:inherit;padding:8px 10px;border:1.5px solid var(--line);border
 table{width:100%;border-collapse:collapse}
 th{text-align:left;font-size:12px;color:var(--muted);padding:9px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
 td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
-tr:last-child td{border-bottom:0}
-td img,.noimg{width:48px;height:48px;border-radius:9px;object-fit:cover;display:grid;place-items:center;background:var(--paper)}
+td img.th{width:48px;height:48px;border-radius:9px;object-fit:cover}td .noimg{width:48px;height:48px}
 .tag{display:inline-block;position:relative;background:var(--tag);padding:2px 9px 2px 21px;border-radius:4px 10px 10px 4px;font:600 12px ui-monospace,Consolas,monospace;margin-top:3px}
 .tag::before{content:"";position:absolute;left:7px;top:50%;width:7px;height:7px;margin-top:-3.5px;border-radius:50%;background:var(--paper);box-shadow:inset 0 0 0 1px #0004}
 .badge{font-size:11px;font-weight:700;color:#fff;background:var(--low);border-radius:99px;padding:2px 8px;margin-left:4px}
-.pos{color:var(--ok);font-weight:600}.neg{color:var(--low);font-weight:600}
-.empty{padding:34px;text-align:center;color:var(--muted)}
+.pos,.ok{color:var(--ok);font-weight:600}.neg,.warn{color:var(--low);font-weight:600}
+.empty{padding:34px;text-align:center;color:var(--muted)}.note{font-size:12.5px;color:var(--muted)}
+.banner{background:#fff4c2;border:1px solid var(--tag);border-radius:10px;padding:8px 12px;margin-bottom:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 body.priv .sec{display:none}
 dialog{border:0;border-radius:16px;padding:0;width:min(560px,94vw);max-height:92vh;color:var(--ink)}
 dialog::backdrop{background:#0f2b3a99}
 .dh{padding:14px 18px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
 .dh h2{margin:0;font-size:18px}.db{padding:16px 18px;display:grid;gap:12px}
-.df{padding:12px 18px;border-top:1px solid var(--line);display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
-.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.df{padding:12px 18px;border-top:1px solid var(--line);display:flex;gap:8px;justify-content:flex-end}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.bar{display:flex;flex-wrap:wrap;gap:8px}
 label.f{display:grid;gap:4px;font-weight:600;font-size:13px}
 .drop{border:2px dashed var(--line);border-radius:12px;padding:10px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
 .drop.over{border-color:var(--ink);background:#fffbe6}
-.drop img,#vid{width:110px;height:110px;object-fit:cover;border-radius:10px;background:var(--paper)}
-#vid{width:100%;height:auto;max-height:260px}
-.calc{background:var(--paper);border-radius:10px;padding:10px 12px;display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;font-size:14px}
+#prev{width:110px;height:110px;object-fit:cover;border-radius:10px}
+#vid{width:100%;max-height:260px;border-radius:10px;background:#000}
+.calc{background:var(--paper);border-radius:10px;padding:10px 12px;display:grid;grid-template-columns:1fr 1fr;gap:6px 12px}
 .calc .tag{grid-column:1/-1;justify-self:start}
-.note{font-size:12.5px;color:var(--muted)}.warn{color:var(--low)}
 .res{font-size:30px;font-weight:800;text-align:center;padding:10px}
 .map{display:grid;grid-template-columns:repeat(10,1fr);gap:4px;text-align:center;font:600 13px ui-monospace,Consolas,monospace}
 .map div{background:var(--paper);border-radius:6px;padding:4px 0}.map small{display:block;color:var(--muted);font-weight:400}
+.big-in{font:700 22px ui-monospace,Consolas,monospace;text-transform:uppercase;text-align:center}
 @media(max-width:760px){
  thead{display:none}tr{display:grid;grid-template-columns:56px 1fr;gap:2px 10px;padding:10px;border-bottom:1px solid var(--line)}
  td{border:0;padding:2px 0;display:flex;justify-content:space-between;gap:8px;grid-column:1/-1}
  td.ph{grid-column:1;grid-row:1/3;display:block}td.nm{grid-column:2;display:block}
  td[data-l]:not([data-l=""])::before{content:attr(data-l);color:var(--muted);font-size:12px}
- td.act{justify-content:flex-start}.g2{grid-template-columns:1fr 1fr}.map{grid-template-columns:repeat(5,1fr)}
+ .map{grid-template-columns:repeat(5,1fr)}
 }
 </style>
 </head>
 <body>
-<header>
-<h1>Stockroom Tags</h1>
-<div class="bar">
-<button class="pri" id="bAdd">+ Add product</button>
-<button id="bDec">Cost decoder</button>
-<button id="bXls">Export Excel</button>
-<button id="bPriv" aria-pressed="false">Hide costs</button>
-<button id="bSet">Settings</button>
-</div>
-</header>
-<main>
-<section class="tiles" id="tiles" aria-label="Dashboard"></section>
-<section class="recent"><h2>Recent additions</h2><div class="rl" id="recent"></div></section>
-<div class="tools">
-<input type="search" id="q" placeholder="Search name, serial, supplier" aria-label="Search">
-<select id="cat" aria-label="Category"></select>
-<label><input type="checkbox" id="lowOnly"> Low stock only</label>
-<span class="note" id="count"></span>
-</div>
-<div class="wrap"><table><thead><tr>
-<th></th><th>Product</th><th>Category</th><th>Supplier</th><th>Qty</th><th class="sec">Cost</th><th>Price</th><th class="sec">Profit/unit</th><th>Total value</th><th>Added</th><th></th>
-</tr></thead><tbody id="rows"></tbody></table></div>
-</main>
+<nav id="nav" hidden></nav>
+<main id="app"><p class="note">Loading…</p></main>
 
 <dialog id="dP"><form id="fP" autocomplete="off">
-<div class="dh"><h2 id="pT">Add product</h2><button type="button" class="sm" data-close>Close</button></div>
+<div class="dh"><h2 id="pT">Add product</h2><button type="button" class="sm" data-act="closeP">Close</button></div>
 <div class="db">
 <div class="drop" id="drop">
 <img id="prev" alt="Product photo" hidden>
-<div style="display:grid;gap:6px">
-<div class="bar"><button type="button" id="bCam">Take photo</button><button type="button" id="bUp">Upload</button><button type="button" class="sm danger" id="bNoPh" hidden>Remove</button></div>
-<span class="note">Or drop an image here.</span></div>
+<div style="display:grid;gap:6px"><div class="bar"><button type="button" data-act="cam">Take photo</button><button type="button" data-act="up">Upload</button><button type="button" class="sm danger" id="bNoPh" data-act="noPh" hidden>Remove</button></div><span class="note">Or drop an image here.</span></div>
 <input type="file" id="fileUp" accept="image/*" hidden><input type="file" id="fileCap" accept="image/*" capture="environment" hidden>
 </div>
-<div id="camBox" hidden><video id="vid" autoplay playsinline muted></video><div class="bar" style="margin-top:6px"><button type="button" class="pri" id="bSnap">Capture</button><button type="button" id="bStop">Cancel</button></div></div>
+<div id="camBox" hidden><video id="vid" autoplay playsinline muted></video><div class="bar" style="margin-top:6px"><button type="button" class="pri" data-act="snap">Capture</button><button type="button" data-act="stopCam">Cancel</button></div></div>
 <label class="f">Product name<input id="fName" required maxlength="80"></label>
 <div class="g2">
 <label class="f">Category<input id="fCat" list="cats" required maxlength="40"></label>
@@ -116,185 +95,172 @@ label.f{display:grid;gap:4px;font-weight:600;font-size:13px}
 <label class="f">Selling price<input id="fPrice" type="number" min="0" step="0.01" required></label>
 </div>
 <datalist id="cats"></datalist>
-<div class="calc" aria-live="polite">
-<span class="tag" id="cSer"></span>
-<span>Profit per unit</span><b id="cProf">-</b>
-<span>Total inventory value</span><b id="cTot">-</b>
-</div>
+<div class="calc" aria-live="polite"><span class="tag" id="cSer"></span><span>Profit per unit</span><b id="cProf">-</b><span>Total inventory value</span><b id="cTot">-</b></div>
 <div class="note warn" id="cWarn"></div>
 </div>
-<div class="df"><button type="button" data-close>Cancel</button><button class="pri" type="submit">Save product</button></div>
+<div class="df"><button type="button" data-act="closeP">Cancel</button><button class="pri" id="bSave" type="submit">Save product</button></div>
 </form></dialog>
 
-<dialog id="dD">
-<div class="dh"><h2>Cost decoder</h2><button type="button" class="sm" data-close>Close</button></div>
-<div class="db">
-<label class="f">Last 3 letters of the serial<input id="dIn" maxlength="3" placeholder="e.g. LBN" style="font:700 22px ui-monospace,Consolas,monospace;text-transform:uppercase;text-align:center"></label>
-<div class="res" id="dOut">-</div>
-<div class="note" id="dNote"></div>
-<div class="map" id="dMap"></div>
-</div></dialog>
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {getAuth,onAuthStateChanged,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut,sendPasswordResetEmail,sendEmailVerification,updateProfile} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {getFirestore,collection,doc,setDoc,deleteDoc,onSnapshot} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-<dialog id="dS">
-<div class="dh"><h2>Settings</h2><button type="button" class="sm" data-close>Close</button></div>
-<div class="db">
-<label class="f">Cipher key (10 letters, maps to digits 1 2 3 4 5 6 7 8 9 0)<input id="sKey" maxlength="10" style="text-transform:uppercase;font-family:ui-monospace,Consolas,monospace"></label>
-<div class="map" id="sMap"></div>
-<div class="note" id="sWarn"></div>
-<div class="g2">
-<label class="f">Currency symbol<input id="sCur" maxlength="3"></label>
-<label class="f">Default low-stock level<input id="sLow" type="number" min="0"></label>
-</div>
-<div class="note">Serials are rebuilt from the key, so changing it changes every tag's last 3 letters. Re-print old tags if you change it.</div>
-</div>
-<div class="df"><button type="button" class="danger" id="sWipe">Delete all data</button><button class="pri" id="sSave">Save settings</button></div>
-</dialog>
+/* ====== PASTE YOUR FIREBASE WEB APP CONFIG HERE ====== */
+const firebaseConfig={apiKey:"PASTE_API_KEY",authDomain:"PASTE.firebaseapp.com",projectId:"PASTE_PROJECT_ID",appId:"PASTE_APP_ID"};
+/* ===================================================== */
 
-<script>
-const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
-const load=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}};
-let products=load('inv.products',[]);
-let S=Object.assign({key:'LIKEBROKEN',cur:'$',low:5,hide:false},load('inv.settings',{}));
-let editId=null,base='',photo='',stream=null;
-function save(){try{localStorage.setItem('inv.products',JSON.stringify(products));localStorage.setItem('inv.settings',JSON.stringify(S));return true}catch(e){alert('Browser storage is full. Remove some photos or products.');return false}}
-const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const CONFIGURED=!firebaseConfig.apiKey.startsWith('PASTE');
+const app=CONFIGURED?initializeApp(firebaseConfig):null,auth=CONFIGURED?getAuth(app):null,db=CONFIGURED?getFirestore(app):null;
+const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const DEF={key:'LIKEBROKEN',cur:'$',low:5};
+let user=null,products=[],S={...DEF},ready=false,unsubs=[],editId=null,base='',photo='',stream=null,hide=localStorage.getItem('hide')==='1';
+const PUB=['login','register','forgot'],route=()=>location.hash.replace('#/','')||'',go=r=>{location.hash='#/'+r};
 const money=n=>S.cur+Number(n||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
-const keyL=()=>S.key.toUpperCase().replace(/[^A-Z]/g,'');
+const dstr=s=>new Date(s).toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'}),isLow=p=>p.qty<p.low;
+const ERR={'auth/invalid-credential':'Wrong email or password.','auth/user-not-found':'No account with that email.','auth/wrong-password':'Wrong email or password.','auth/email-already-in-use':'That email is already registered. Try signing in.','auth/weak-password':'Password must be at least 6 characters.','auth/invalid-email':'Enter a valid email address.','auth/too-many-requests':'Too many attempts. Try again later.','auth/network-request-failed':'Network error. Check your connection.'};
+const say=(t,ok)=>{const m=$('#m');if(m){m.textContent=t;m.className='note '+(ok?'ok':'warn')}};
 
-/* Cost-code cipher: key letter 1..9 = digits 1..9, letter 10 = digit 0 */
-function enc(price){const k=keyL(),d=String(Math.round(price||0)%1000).padStart(3,'0');return [...d].map(x=>k[(+x+9)%10]).join('')}
-function dec(code){const k=keyL();let out=[''];for(const ch of code.toUpperCase()){const ds=[];for(let i=0;i<10;i++)if(k[i]===ch)ds.push((i+1)%10);if(!ds.length)return null;out=out.flatMap(r=>ds.map(d=>r+d))}return [...new Set(out.map(Number))].sort((a,b)=>a-b)}
-const serial=p=>p.base+enc(p.cost);
-function newBase(){const d=new Date(),ymd=''+d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0'),pre=`SKU-${ymd}-`;
- const n=Math.max(0,...products.filter(p=>p.base.startsWith(pre)).map(p=>+p.base.slice(pre.length)||0))+1;return pre+String(n).padStart(4,'0')}
-function mapHTML(){const k=keyL();return '1234567890'.split('').map((d,i)=>`<div>${k[i]||'?'}<small>${d}</small></div>`).join('')}
+/* ---- Cost-code cipher ---- */
+const keyL=(k=S.key)=>k.toUpperCase().replace(/[^A-Z]/g,'');
+const enc=p=>{const k=keyL(),d=String(Math.round(p||0)%1000).padStart(3,'0');return [...d].map(x=>k[(+x+9)%10]).join('')};
+function dec(code){const k=keyL();let o=[''];for(const ch of code.toUpperCase()){const ds=[];for(let i=0;i<10;i++)if(k[i]===ch)ds.push((i+1)%10);if(!ds.length)return null;o=o.flatMap(r=>ds.map(d=>r+d))}return [...new Set(o.map(Number))].sort((a,b)=>a-b)}
+const serial=p=>p.base+enc(p.cost),mapHTML=k=>'1234567890'.split('').map((d,i)=>`<div>${k[i]||'?'}<small>${d}</small></div>`).join('');
+function newBase(){const d=new Date(),y=''+d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0'),pre=`SKU-${y}-`;
+ return pre+String(Math.max(0,...products.filter(p=>p.base.startsWith(pre)).map(p=>+p.base.slice(pre.length)||0))+1).padStart(4,'0')}
 
-/* Images */
+/* ---- Auth + data sync ---- */
+const udoc=(...p)=>doc(db,'users',user.uid,...p),pcol=()=>collection(db,'users',user.uid,'products');
+if(CONFIGURED)onAuthStateChanged(auth,u=>{
+ unsubs.forEach(f=>f());unsubs=[];user=u;products=[];S={...DEF};
+ if(u){
+  unsubs.push(onSnapshot(pcol(),s=>{products=s.docs.map(d=>d.data());refresh()},e=>alert('Cannot read data: '+e.message+'\nCheck your Firestore rules.')));
+  unsubs.push(onSnapshot(udoc('meta','settings'),s=>{S={...DEF,...(s.data()||{})};refresh(true)}));
+ }
+ ready=true;render()});
+else{ready=true;render()}
+
+/* ---- Pages ---- */
+const setup=()=>CONFIGURED?'':'<div class="banner">Firebase is not set up yet. Paste your config at the top of the script, as described in the setup steps.</div>';
+const authBox=(t,body)=>`<form class="auth" id="f-${t[0]}" autocomplete="on">${setup()}<h1>Stockroom Tags</h1><b>${t[1]}</b>${body}<div id="m" class="note" role="alert"></div></form>`;
+const PAGES={
+ login:()=>authBox(['login','Sign in'],`<label class="f">Email<input name="email" type="email" required autocomplete="email"></label><label class="f">Password<input name="pw" type="password" required autocomplete="current-password"></label><button class="pri">Sign in</button><div class="note"><a href="#/forgot">Forgot password?</a> · <a href="#/register">Create account</a></div>`),
+ register:()=>authBox(['register','Create your account'],`<label class="f">Your name<input name="name" required maxlength="50" autocomplete="name"></label><label class="f">Email<input name="email" type="email" required autocomplete="email"></label><label class="f">Password (6+ characters)<input name="pw" type="password" minlength="6" required autocomplete="new-password"></label><label class="f">Confirm password<input name="pw2" type="password" minlength="6" required autocomplete="new-password"></label><button class="pri">Create account</button><div class="note">Already registered? <a href="#/login">Sign in</a></div>`),
+ forgot:()=>authBox(['forgot','Reset password'],`<label class="f">Email<input name="email" type="email" required></label><button class="pri">Send reset link</button><div class="note"><a href="#/login">Back to sign in</a></div>`),
+ dashboard:()=>{
+  const val=products.reduce((a,p)=>a+p.price*p.qty,0),prof=products.reduce((a,p)=>a+(p.price-p.cost)*p.qty,0),units=products.reduce((a,p)=>a+p.qty,0),lows=products.filter(isLow);
+  const rec=[...products].sort((a,b)=>b.added.localeCompare(a.added)).slice(0,6);
+  const th=p=>p.photo?`<img src="${p.photo}" alt="">`:'<div class="noimg">📦</div>';
+  return `<h2 class="pg">Dashboard</h2>${user.emailVerified?'':'<div class="banner">Please verify your email. We sent you a link. <button class="sm" data-act="resend">Resend</button></div>'}
+<section class="tiles"><div class="tile big"><span>Inventory value (at selling price)</span><b>${money(val)}</b></div><div class="tile"><span>Products / units</span><b>${products.length} / ${units}</b></div><div class="tile sec"><span>Potential profit</span><b>${money(prof)}</b></div><div class="tile"><span>Low-stock items</span><b class="${lows.length?'neg':''}">${lows.length}</b></div></section>
+<section class="panel"><h3>Recent additions</h3><div class="rl">${rec.length?rec.map(p=>`<div class="ri">${th(p)}<div><b>${esc(p.name)}</b><br><span class="note">${dstr(p.added)}</span></div></div>`).join(''):'<span class="note">Nothing yet. Open Inventory and add your first product.</span>'}</div></section>
+${lows.length?`<section class="panel"><h3>Needs restocking</h3>${lows.map(p=>`<div class="ri" style="margin:6px 0">${th(p)}<div><b>${esc(p.name)}</b><br><span class="note">${p.qty} left (alert below ${p.low})</span></div></div>`).join('')}</section>`:''}`},
+ inventory:()=>`<div class="bar" style="justify-content:space-between;align-items:center"><h2 class="pg">Inventory</h2><div class="bar"><button class="pri" data-act="add">+ Add product</button><button data-act="xlsx">Export Excel</button></div></div>
+<div class="tools"><input type="search" id="q" placeholder="Search name, serial, supplier" aria-label="Search"><select id="cat" aria-label="Category"></select><label><input type="checkbox" id="lowOnly"> Low stock only</label><span class="note" id="count"></span></div>
+<div class="wrap"><table><thead><tr><th></th><th>Product</th><th>Category</th><th>Supplier</th><th>Qty</th><th class="sec">Cost</th><th>Price</th><th class="sec">Profit/unit</th><th>Total value</th><th>Added</th><th></th></tr></thead><tbody id="rows"></tbody></table></div>`,
+ decoder:()=>`<h2 class="pg">Cost decoder</h2><div class="auth" style="margin:0 auto"><label class="f">Last 3 letters of a serial<input id="dIn" class="big-in" maxlength="3" placeholder="LBN" autocomplete="off"></label><div class="res" id="dOut">-</div><div class="note" id="dNote"></div><div class="map">${mapHTML(keyL())}</div></div>`,
+ settings:()=>`<h2 class="pg">Settings</h2><div class="auth" style="margin:0 auto"><div class="note">Signed in as <b>${esc(user.email)}</b></div>
+<label class="f">Cipher key (10 letters → digits 1 2 3 4 5 6 7 8 9 0)<input id="sKey" maxlength="10" value="${esc(S.key)}" style="text-transform:uppercase;font-family:ui-monospace,Consolas,monospace"></label><div class="map" id="sMap">${mapHTML(keyL())}</div><div class="note" id="sWarn"></div>
+<div class="g2"><label class="f">Currency symbol<input id="sCur" maxlength="3" value="${esc(S.cur)}"></label><label class="f">Default low-stock level<input id="sLow" type="number" min="0" value="${S.low}"></label></div>
+<div class="note">The key is saved in your private cloud account, not in the public code. Changing it rewrites the last 3 letters of every serial.</div><div id="m" class="note" role="status"></div><button class="pri" data-act="saveSet">Save settings</button></div>`};
+
+function nav(){const n=$('#nav'),r=route();n.hidden=!user;if(!user)return;
+ n.innerHTML=`<b>Stockroom Tags</b>${['dashboard','inventory','decoder','settings'].map(p=>`<a href="#/${p}" class="${r===p?'on':''}">${p[0].toUpperCase()+p.slice(1)}</a>`).join('')}<button data-act="priv">${hide?'Show costs':'Hide costs'}</button><button data-act="out">Sign out</button>`}
+function render(){if(!ready)return;let r=route();
+ if(!user&&!PUB.includes(r))return go('login');if(user&&(PUB.includes(r)||!PAGES[r]))return go('dashboard');
+ document.body.classList.toggle('priv',hide);nav();$('#app').innerHTML=PAGES[r]();if(r==='inventory')drawInv();if(r==='decoder'){$('#dIn').focus()}}
+function refresh(){const r=route();if(!user)return;if(r==='dashboard')render();else if(r==='inventory')drawInv()}
+window.addEventListener('hashchange',render);
+
+function drawInv(){
+ const cats=[...new Set(products.map(p=>p.cat))].sort(),sel=$('#cat'),cur=sel.value;
+ sel.innerHTML='<option value="">All categories</option>'+cats.map(c=>`<option>${esc(c)}</option>`).join('');sel.value=cats.includes(cur)?cur:'';
+ $('#cats').innerHTML=cats.map(c=>`<option value="${esc(c)}">`).join('');
+ const q=$('#q').value.toLowerCase(),lo=$('#lowOnly').checked;
+ const list=products.filter(p=>(!sel.value||p.cat===sel.value)&&(!lo||isLow(p))&&(!q||[p.name,serial(p),p.sup,p.cat].join(' ').toLowerCase().includes(q))).sort((a,b)=>b.added.localeCompare(a.added));
+ $('#count').textContent=list.length+' shown';
+ $('#rows').innerHTML=list.length?list.map(p=>{const pr=p.price-p.cost;return `<tr><td class="ph">${p.photo?`<img class="th" src="${p.photo}" alt="">`:'<div class="noimg">📦</div>'}</td>
+<td class="nm"><b>${esc(p.name)}</b><br><span class="tag">${esc(serial(p))}</span></td><td data-l="Category">${esc(p.cat)}</td><td data-l="Supplier">${esc(p.sup)||'-'}</td>
+<td data-l="Qty"><span>${p.qty}${isLow(p)?`<span class="badge">${p.qty===0?'Out':'Low'}</span>`:''}</span></td><td class="sec" data-l="Cost">${money(p.cost)}</td><td data-l="Price">${money(p.price)}</td>
+<td class="sec ${pr<0?'neg':'pos'}" data-l="Profit/unit">${money(pr)}</td><td data-l="Total value">${money(p.price*p.qty)}</td><td data-l="Added">${dstr(p.added)}</td>
+<td><button class="sm" data-e="${p.id}" data-act="edit">Edit</button> <button class="sm danger" data-x="${p.id}" data-act="del">Delete</button></td></tr>`}).join(''):`<tr><td class="empty" colspan="11">${products.length?'No products match your filters.':'No products yet. Click “Add product”.'}</td></tr>`}
+
+/* ---- Photos ---- */
 const readURL=f=>new Promise(r=>{const fr=new FileReader();fr.onload=()=>r(fr.result);fr.readAsDataURL(f)});
 const shrink=src=>new Promise(r=>{const i=new Image();i.onload=()=>{const s=Math.min(1,480/Math.max(i.width,i.height)),c=document.createElement('canvas');c.width=i.width*s;c.height=i.height*s;c.getContext('2d').drawImage(i,0,0,c.width,c.height);r(c.toDataURL('image/jpeg',.72))};i.onerror=()=>r('');i.src=src});
-async function setPhoto(f){if(!f||!f.type.startsWith('image/'))return;photo=await shrink(await readURL(f));showPhoto()}
+const setPhoto=async f=>{if(f&&f.type.startsWith('image/')){photo=await shrink(await readURL(f));showPhoto()}};
 function showPhoto(){$('#prev').hidden=!photo;$('#bNoPh').hidden=!photo;if(photo)$('#prev').src=photo}
 async function startCam(){try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});$('#vid').srcObject=stream;$('#camBox').hidden=false}catch{$('#fileCap').click()}}
-function stopCam(){if(stream)stream.getTracks().forEach(t=>t.stop());stream=null;$('#camBox').hidden=true}
-$('#bCam').onclick=startCam;$('#bStop').onclick=stopCam;$('#bUp').onclick=()=>$('#fileUp').click();
+function stopCam(){stream&&stream.getTracks().forEach(t=>t.stop());stream=null;$('#camBox').hidden=true}
 $('#fileUp').onchange=e=>setPhoto(e.target.files[0]);$('#fileCap').onchange=e=>setPhoto(e.target.files[0]);
-$('#bNoPh').onclick=()=>{photo='';showPhoto()};
-$('#bSnap').onclick=async()=>{const v=$('#vid'),c=document.createElement('canvas');c.width=v.videoWidth;c.height=v.videoHeight;c.getContext('2d').drawImage(v,0,0);photo=await shrink(c.toDataURL('image/jpeg'));stopCam();showPhoto()};
 const dz=$('#drop');['dragover','dragenter'].forEach(e=>dz.addEventListener(e,ev=>{ev.preventDefault();dz.classList.add('over')}));
-['dragleave','drop'].forEach(e=>dz.addEventListener(e,ev=>{ev.preventDefault();dz.classList.remove('over')}));
-dz.addEventListener('drop',e=>setPhoto(e.dataTransfer.files[0]));
+['dragleave','drop'].forEach(e=>dz.addEventListener(e,ev=>{ev.preventDefault();dz.classList.remove('over')}));dz.addEventListener('drop',e=>setPhoto(e.dataTransfer.files[0]));
 
-/* Product form */
-function calc(){const c=+$('#fCost').value||0,p=+$('#fPrice').value||0,q=+$('#fQty').value||0;
- $('#cSer').textContent=base+enc(c);
+/* ---- Product form ---- */
+function calc(){const c=+$('#fCost').value||0,p=+$('#fPrice').value||0,q=+$('#fQty').value||0;$('#cSer').textContent=base+enc(c);
  const pr=p-c,b=$('#cProf');b.textContent=money(pr);b.className=pr<0?'neg':'pos';$('#cTot').textContent=money(p*q);
- $('#cWarn').textContent=(c>=1000?'Cost is above 999, so the code only covers the last 3 digits ('+String(Math.round(c)).slice(-3)+'). ':'')+(c%1>0?'Cents are rounded in the code. ':'')+(p<c?'Selling price is below cost.':'')}
+ $('#cWarn').textContent=(c>=1000?`Cost is above 999, so the code covers only the last 3 digits (${String(Math.round(c)).slice(-3)}). `:'')+(p<c?'Selling price is below cost.':'')}
 ['fCost','fPrice','fQty'].forEach(i=>$('#'+i).oninput=calc);
-function openP(id){editId=id||null;const p=products.find(x=>x.id===id);
- $('#pT').textContent=p?'Edit product':'Add product';base=p?p.base:newBase();photo=p?p.photo:'';
- $('#fName').value=p?.name||'';$('#fCat').value=p?.cat||'';$('#fSup').value=p?.sup||'';$('#fQty').value=p?.qty??'';
- $('#fLow').value=p?.low??S.low;$('#fCost').value=p?.cost??'';$('#fPrice').value=p?.price??'';
+function openP(id){editId=id||null;const p=products.find(x=>x.id===id);$('#pT').textContent=p?'Edit product':'Add product';base=p?p.base:newBase();photo=p?.photo||'';
+ $('#fName').value=p?.name||'';$('#fCat').value=p?.cat||'';$('#fSup').value=p?.sup||'';$('#fQty').value=p?.qty??'';$('#fLow').value=p?.low??S.low;$('#fCost').value=p?.cost??'';$('#fPrice').value=p?.price??'';
  showPhoto();calc();stopCam();$('#dP').showModal()}
-$('#fP').onsubmit=e=>{e.preventDefault();
+$('#fP').onsubmit=async e=>{e.preventDefault();const btn=$('#bSave');btn.disabled=true;
  const o={name:$('#fName').value.trim(),cat:$('#fCat').value.trim(),sup:$('#fSup').value.trim(),qty:Math.max(0,Math.floor(+$('#fQty').value)),low:Math.max(0,Math.floor(+$('#fLow').value)),cost:+$('#fCost').value,price:+$('#fPrice').value,photo};
- if(editId){Object.assign(products.find(x=>x.id===editId),o)}
- else{if(products.some(p=>p.base===base))base=newBase();products.push({id:'p'+Date.now(),base,added:new Date().toISOString(),...o})}
- if(save()){$('#dP').close();stopCam();render()}};
+ try{let rec;if(editId)rec={...products.find(x=>x.id===editId),...o};else{if(products.some(p=>p.base===base))base=newBase();rec={id:'p'+Date.now(),base,added:new Date().toISOString(),...o}}
+  await setDoc(udoc('products',rec.id),rec);$('#dP').close();stopCam()}catch(err){alert('Could not save: '+err.message)}btn.disabled=false};
 
-/* Dashboard + table */
-const isLow=p=>p.qty<p.low, dstr=s=>new Date(s).toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'});
-function render(){
- document.body.classList.toggle('priv',S.hide);$('#bPriv').textContent=S.hide?'Show costs':'Hide costs';$('#bPriv').setAttribute('aria-pressed',S.hide);
- const val=products.reduce((a,p)=>a+p.price*p.qty,0),prof=products.reduce((a,p)=>a+(p.price-p.cost)*p.qty,0),units=products.reduce((a,p)=>a+p.qty,0),lows=products.filter(isLow).length;
- $('#tiles').innerHTML=`<div class="tile big"><span>Inventory value (at selling price)</span><b>${money(val)}</b></div><div class="tile"><span>Products / units</span><b>${products.length} / ${units}</b></div><div class="tile sec"><span>Potential profit</span><b>${money(prof)}</b></div><div class="tile"><span>Low-stock items</span><b class="${lows?'neg':''}">${lows}</b></div>`;
- const rec=[...products].sort((a,b)=>b.added.localeCompare(a.added)).slice(0,6);
- $('#recent').innerHTML=rec.length?rec.map(p=>`<div class="ri">${p.photo?`<img src="${p.photo}" alt="">`:'<div class="noimg">📦</div>'}<div><b>${esc(p.name)}</b><br><span class="note">${dstr(p.added)}</span></div></div>`).join(''):'<span class="note">Nothing yet. Add your first product.</span>';
- const cats=[...new Set(products.map(p=>p.cat))].sort(),cur=$('#cat').value;
- $('#cat').innerHTML='<option value="">All categories</option>'+cats.map(c=>`<option>${esc(c)}</option>`).join('');$('#cat').value=cats.includes(cur)?cur:'';
- $('#cats').innerHTML=cats.map(c=>`<option value="${esc(c)}">`).join('');
- const q=$('#q').value.toLowerCase(),c=$('#cat').value,lo=$('#lowOnly').checked;
- const list=products.filter(p=>(!c||p.cat===c)&&(!lo||isLow(p))&&(!q||[p.name,serial(p),p.sup,p.cat].join(' ').toLowerCase().includes(q))).sort((a,b)=>b.added.localeCompare(a.added));
- $('#count').textContent=list.length+' shown';
- $('#rows').innerHTML=list.length?list.map(p=>{const pr=p.price-p.cost;return `<tr>
-<td class="ph">${p.photo?`<img src="${p.photo}" alt="">`:'<div class="noimg">📦</div>'}</td>
-<td class="nm"><b>${esc(p.name)}</b><br><span class="tag">${esc(serial(p))}</span></td>
-<td data-l="Category">${esc(p.cat)}</td><td data-l="Supplier">${esc(p.sup)||'-'}</td>
-<td data-l="Qty"><span>${p.qty}${isLow(p)?`<span class="badge">${p.qty===0?'Out':'Low'}</span>`:''}</span></td>
-<td class="sec" data-l="Cost">${money(p.cost)}</td><td data-l="Price">${money(p.price)}</td>
-<td class="sec ${pr<0?'neg':'pos'}" data-l="Profit/unit">${money(pr)}</td><td data-l="Total value">${money(p.price*p.qty)}</td>
-<td data-l="Added">${dstr(p.added)}</td>
-<td class="act"><button class="sm" data-e="${p.id}">Edit</button> <button class="sm danger" data-x="${p.id}">Delete</button></td></tr>`}).join(''):`<tr><td class="empty" colspan="11">${products.length?'No products match your filters.':'No products yet. Click “Add product” to start.'}</td></tr>`}
-$('#rows').onclick=e=>{const b=e.target.closest('button');if(!b)return;
- if(b.dataset.e)openP(b.dataset.e);
- if(b.dataset.x&&confirm('Delete this product?')){products=products.filter(p=>p.id!==b.dataset.x);save();render()}};
-['q','cat','lowOnly'].forEach(i=>$('#'+i).oninput=render);
-
-/* Decoder */
-function decode(){const v=$('#dIn').value.replace(/[^a-z]/gi,'').toUpperCase();$('#dIn').value=v;const o=$('#dOut'),n=$('#dNote');
- if(v.length<3){o.textContent='-';n.textContent='';return}
- const r=dec(v);if(!r){o.textContent='Invalid code';n.textContent='One or more letters are not in your cipher key.';return}
- o.textContent=r.length===1?money(r[0]):r.map(x=>S.cur+x).join('  or  ');
- n.textContent=r.length>1?'Your key repeats letters, so this code has more than one possible price.':'Whole-unit price encoded in the tag.'}
-$('#dIn').oninput=decode;
-$('#bDec').onclick=()=>{$('#dMap').innerHTML=mapHTML();$('#dIn').value='';decode();$('#dD').showModal();$('#dIn').focus()};
-
-/* Settings */
-function keyCheck(){const k=$('#sKey').value.toUpperCase().replace(/[^A-Z]/g,'');S.key=k||S.key;$('#sMap').innerHTML=mapHTML();
- const dup=new Set(k).size<k.length;$('#sWarn').innerHTML=k.length!==10?'<span class="warn">The key needs exactly 10 letters.</span>':dup?'<span class="warn">This key repeats letters, so some codes decode to more than one price. Use 10 different letters for a reliable code.</span>':'Key is unambiguous.'}
-$('#bSet').onclick=()=>{$('#sKey').value=S.key;$('#sCur').value=S.cur;$('#sLow').value=S.low;keyCheck();$('#dS').showModal()};
-$('#sKey').oninput=()=>{const old=S.key;keyCheck();S.key=old;const k=$('#sKey').value.toUpperCase().replace(/[^A-Z]/g,'');$('#sMap').innerHTML='1234567890'.split('').map((d,i)=>`<div>${k[i]||'?'}<small>${d}</small></div>`).join('')};
-$('#sSave').onclick=e=>{const k=$('#sKey').value.toUpperCase().replace(/[^A-Z]/g,'');if(k.length!==10){e.preventDefault();$('#sWarn').innerHTML='<span class="warn">The key needs exactly 10 letters.</span>';return}
- S.key=k;S.cur=$('#sCur').value||'$';S.low=Math.max(0,+$('#sLow').value||0);save();render();$('#dS').close()};
-$('#sWipe').onclick=()=>{if(confirm('Delete ALL products and settings? This cannot be undone.')){products=[];localStorage.removeItem('inv.products');save();render();$('#dS').close()}};
-$('#bPriv').onclick=()=>{S.hide=!S.hide;save();render()};
-$('#bAdd').onclick=()=>openP();
-$$('[data-close]').forEach(b=>b.onclick=()=>{b.closest('dialog').close();stopCam()});
-$$('dialog').forEach(d=>d.addEventListener('close',stopCam));
-
-/* Excel export (native formulas) */
-function exportXlsx(){
- if(typeof XLSX==='undefined')return alert('The Excel library did not load. Check your internet connection and reload.');
+/* ---- Excel export with embedded photos (ExcelJS) ---- */
+async function exportXlsx(){
+ if(!window.ExcelJS)return alert('The Excel library did not load. Check your connection and reload.');
  if(!products.length)return alert('Add a product first.');
- const X=XLSX,n=products.length,first=4,last=3+n,tr=last,ws={};
- const bd={style:'thin',color:{rgb:'D9E0E6'}},border={top:bd,bottom:bd,left:bd,right:bd};
- const set=(r,c,v,o={})=>{ws[X.utils.encode_cell({r,c})]=Object.assign({v,t:typeof v==='number'?'n':'s'},o)};
- const H=['Serial','Product','Category','Supplier','Date added','Qty','Buying price','Selling price','Profit / unit','Total value','Alert below','Status'];
- const hs={font:{bold:true,color:{rgb:'FFFFFF'}},fill:{patternType:'solid',fgColor:{rgb:'0F2B3A'}},alignment:{horizontal:'center',vertical:'center',wrapText:true},border};
- set(0,0,'Inventory report',{s:{font:{bold:true,sz:18,color:{rgb:'0F2B3A'}}}});
- set(1,0,'Generated '+new Date().toLocaleString(),{s:{font:{italic:true,color:{rgb:'5C7080'}}}});
- H.forEach((h,c)=>set(2,c,h,{s:hs}));
- const money='#,##0.00';
- [...products].sort((a,b)=>a.added.localeCompare(b.added)).forEach((p,i)=>{
-  const r=3+i,x=r+1,fill=i%2?{patternType:'solid',fgColor:{rgb:'F1F4F7'}}:undefined,st=(extra={})=>({s:Object.assign({border,fill},extra)});
-  set(r,0,serial(p),st({font:{name:'Consolas'}}));set(r,1,p.name,st());set(r,2,p.cat,st());set(r,3,p.sup||'',st());
-  set(r,4,p.added.slice(0,10),st({alignment:{horizontal:'center'}}));
-  set(r,5,p.qty,Object.assign(st(),{z:'#,##0'}));
-  set(r,6,p.cost,Object.assign(st(),{z:money}));set(r,7,p.price,Object.assign(st(),{z:money}));
-  set(r,8,p.price-p.cost,Object.assign(st(),{z:money,f:`H${x}-G${x}`}));
-  set(r,9,p.price*p.qty,Object.assign(st(),{z:money,f:`H${x}*F${x}`}));
-  set(r,10,p.low,Object.assign(st(),{z:'#,##0'}));
-  set(r,11,p.qty<p.low?'LOW':'OK',Object.assign(st({alignment:{horizontal:'center'},font:{bold:true,color:{rgb:p.qty<p.low?'D64545':'1F9D6B'}}}),{f:`IF(F${x}<K${x},"LOW","OK")`}));
- });
- const ts={font:{bold:true,color:{rgb:'0F2B3A'}},fill:{patternType:'solid',fgColor:{rgb:'FFD23F'}},border};
- for(let c=0;c<12;c++)set(tr,c,'',{s:ts});
- set(tr,0,'TOTAL',{s:ts});
- set(tr,5,products.reduce((a,p)=>a+p.qty,0),{s:ts,z:'#,##0',f:`SUM(F${first}:F${last})`});
- set(tr,9,products.reduce((a,p)=>a+p.price*p.qty,0),{s:ts,z:money,f:`SUM(J${first}:J${last})`});
- const ls={font:{bold:true}};
- set(tr+1,0,'Potential profit (profit per unit x qty)',{s:ls});
- set(tr+1,9,products.reduce((a,p)=>a+(p.price-p.cost)*p.qty,0),{s:ls,z:money,f:`SUMPRODUCT(I${first}:I${last},F${first}:F${last})`});
- set(tr+2,0,'Total cost value (buying price x qty)',{s:ls});
- set(tr+2,9,products.reduce((a,p)=>a+p.cost*p.qty,0),{s:ls,z:money,f:`SUMPRODUCT(G${first}:G${last},F${first}:F${last})`});
- ws['!ref']=X.utils.encode_range({s:{r:0,c:0},e:{r:tr+2,c:11}});
- ws['!cols']=[26,30,16,20,13,8,13,13,13,15,11,9].map(w=>({wch:w}));
- ws['!rows']=[{hpt:28},{},{hpt:26}];
- ws['!merges']=[{s:{r:0,c:0},e:{r:0,c:7}}];
- ws['!autofilter']={ref:`A3:L${last}`};
- const wb=X.utils.book_new();X.utils.book_append_sheet(wb,ws,'Inventory');
- X.writeFile(wb,'inventory-'+new Date().toISOString().slice(0,10)+'.xlsx');
-}
-$('#bXls').onclick=exportXlsx;
-render();
+ const wb=new ExcelJS.Workbook(),ws=wb.addWorksheet('Inventory',{views:[{state:'frozen',ySplit:3}]});
+ const list=[...products].sort((a,b)=>a.added.localeCompare(b.added)),first=4,last=3+list.length,fmt='#,##0.00';
+ const thin={style:'thin',color:{argb:'FFD9E0E6'}},bd={top:thin,bottom:thin,left:thin,right:thin},fill=c=>({type:'pattern',pattern:'solid',fgColor:{argb:c}});
+ ws.columns=[12,26,30,16,20,13,8,13,13,13,15,11,9].map(width=>({width}));
+ ws.mergeCells('A1:H1');Object.assign(ws.getCell('A1'),{value:'Inventory report'}).font={bold:true,size:18,color:{argb:'FF0F2B3A'}};
+ ws.getCell('A2').value='Generated '+new Date().toLocaleString();ws.getCell('A2').font={italic:true,color:{argb:'FF5C7080'}};
+ const hr=ws.getRow(3);hr.values=['Photo','Serial','Product','Category','Supplier','Date added','Qty','Buying price','Selling price','Profit / unit','Total value','Alert below','Status'];hr.height=26;
+ hr.eachCell(c=>{c.font={bold:true,color:{argb:'FFFFFFFF'}};c.fill=fill('FF0F2B3A');c.alignment={horizontal:'center',vertical:'middle',wrapText:true};c.border=bd});
+ list.forEach((p,i)=>{const r=first+i,row=ws.getRow(r),low=isLow(p);row.height=52;
+  row.values=['',serial(p),p.name,p.cat,p.sup||'',p.added.slice(0,10),p.qty,p.cost,p.price,{formula:`I${r}-H${r}`,result:p.price-p.cost},{formula:`I${r}*G${r}`,result:p.price*p.qty},p.low,{formula:`IF(G${r}<L${r},"LOW","OK")`,result:low?'LOW':'OK'}];
+  for(let c=1;c<=13;c++){const cell=row.getCell(c);cell.border=bd;cell.alignment={vertical:'middle',horizontal:[7,8,9,10,11,12].includes(c)?'right':c===13||c===6?'center':'left'};if(i%2)cell.fill=fill('FFF1F4F7');if([8,9,10,11].includes(c))cell.numFmt=fmt}
+  row.getCell(2).font={name:'Consolas'};row.getCell(13).font={bold:true,color:{argb:low?'FFD64545':'FF1F9D6B'}};
+  if(p.photo)ws.addImage(wb.addImage({base64:p.photo,extension:'jpeg'}),{tl:{col:0.1,row:r-1+0.06},ext:{width:62,height:62}})});
+ const t=last+1,tr=ws.getRow(t);tr.values=['TOTAL','','','','','',{formula:`SUM(G${first}:G${last})`},'','','',{formula:`SUM(K${first}:K${last})`}];
+ for(let c=1;c<=13;c++){const cell=tr.getCell(c);cell.fill=fill('FFFFD23F');cell.font={bold:true};cell.border=bd}tr.getCell(11).numFmt=fmt;
+ ws.getCell(`A${t+1}`).value='Potential profit (profit per unit x qty)';ws.getCell(`K${t+1}`).value={formula:`SUMPRODUCT(J${first}:J${last},G${first}:G${last})`};
+ ws.getCell(`A${t+2}`).value='Total cost value (buying price x qty)';ws.getCell(`K${t+2}`).value={formula:`SUMPRODUCT(H${first}:H${last},G${first}:G${last})`};
+ [t+1,t+2].forEach(r=>{ws.getCell(`A${r}`).font={bold:true};ws.getCell(`K${r}`).numFmt=fmt;ws.getCell(`K${r}`).font={bold:true}});
+ ws.autoFilter=`A3:M${last}`;
+ const buf=await wb.xlsx.writeBuffer(),a=document.createElement('a');
+ a.href=URL.createObjectURL(new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));
+ a.download='inventory-'+new Date().toISOString().slice(0,10)+'.xlsx';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),4000)}
+
+/* ---- Events ---- */
+const ACT={
+ add:()=>openP(),edit:b=>openP(b.dataset.e),closeP:()=>{$('#dP').close();stopCam()},
+ del:async b=>{if(confirm('Delete this product?'))try{await deleteDoc(udoc('products',b.dataset.x))}catch(e){alert(e.message)}},
+ cam:startCam,stopCam,up:()=>$('#fileUp').click(),noPh:()=>{photo='';showPhoto()},
+ snap:async()=>{const v=$('#vid'),c=document.createElement('canvas');c.width=v.videoWidth;c.height=v.videoHeight;c.getContext('2d').drawImage(v,0,0);photo=await shrink(c.toDataURL('image/jpeg'));stopCam();showPhoto()},
+ xlsx:exportXlsx,priv:()=>{hide=!hide;localStorage.setItem('hide',hide?'1':'0');document.body.classList.toggle('priv',hide);nav()},
+ out:()=>signOut(auth),resend:async()=>{try{await sendEmailVerification(user);alert('Verification email sent.')}catch(e){alert(ERR[e.code]||e.message)}},
+ saveSet:async()=>{const k=keyL($('#sKey').value);if(k.length!==10)return say('The key needs exactly 10 letters.');
+  const n={key:k,cur:$('#sCur').value||'$',low:Math.max(0,+$('#sLow').value||0)};try{await setDoc(udoc('meta','settings'),n);say('Saved.',1)}catch(e){say(e.message)}}};
+document.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(b&&ACT[b.dataset.act])ACT[b.dataset.act](b)});
+document.addEventListener('input',e=>{const id=e.target.id;
+ if(['q','cat','lowOnly'].includes(id))drawInv();
+ if(id==='dIn'){const v=e.target.value.replace(/[^a-z]/gi,'').toUpperCase();e.target.value=v;const o=$('#dOut'),n=$('#dNote');
+  if(v.length<3){o.textContent='-';n.textContent='';return}const r=dec(v);
+  if(!r){o.textContent='Invalid code';n.textContent='A letter is not in your cipher key.';return}
+  o.textContent=r.length===1?money(r[0]):r.map(x=>S.cur+x).join(' or ');n.textContent=r.length>1?'Your key repeats letters, so more than one price fits this code.':'Whole-unit buying price.'}
+ if(id==='sKey'){const k=keyL(e.target.value);$('#sMap').innerHTML=mapHTML(k);$('#sWarn').innerHTML=k.length!==10?'<span class="warn">Needs exactly 10 letters.</span>':new Set(k).size<10?'<span class="warn">Repeated letters make some codes ambiguous. Use 10 different letters.</span>':'<span class="ok">Key is unambiguous.</span>'}});
+document.addEventListener('submit',async e=>{const f=e.target,id=f.id;if(!id.startsWith('f-'))return;e.preventDefault();
+ if(!CONFIGURED)return say('Firebase is not configured yet.');const v=Object.fromEntries(new FormData(f)),btn=f.querySelector('button');btn.disabled=true;
+ try{
+  if(id==='f-login')await signInWithEmailAndPassword(auth,v.email,v.pw);
+  if(id==='f-register'){if(v.pw!==v.pw2)throw{message:'Passwords do not match.'};const c=await createUserWithEmailAndPassword(auth,v.email,v.pw);await updateProfile(c.user,{displayName:v.name});sendEmailVerification(c.user).catch(()=>{})}
+  if(id==='f-forgot'){await sendPasswordResetEmail(auth,v.email);say('If that email is registered, a reset link is on its way.',1)}
+ }catch(err){say(ERR[err.code]||err.message)}btn.disabled=false});
 </script>
 </body>
 </html>
